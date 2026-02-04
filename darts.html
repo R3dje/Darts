@@ -238,9 +238,15 @@
 
     <div id="setup">
         <p>Kies je startscore:</p>
-        <button class="mode-btn" onclick="startGame(101)">101</button>
-        <button class="mode-btn" onclick="startGame(301)">301</button>
-        <button class="mode-btn" onclick="startGame(501)">501</button>
+        <button class="mode-btn" onclick="selectScore(101)">101</button>
+        <button class="mode-btn" onclick="selectScore(301)">301</button>
+        <button class="mode-btn" onclick="selectScore(501)">501</button>
+    </div>
+
+    <div id="player-select" style="display: none;">
+        <p style="font-size: 1.3rem; margin-bottom: 25px;">Wie begint?</p>
+        <button class="mode-btn" onclick="startGame(0)" style="width: 200px; margin: 15px;">Zeebulon</button>
+        <button class="mode-btn" onclick="startGame(1)" style="width: 200px; margin: 15px;">Ras Echt</button>
     </div>
 
     <div id="game">
@@ -291,6 +297,7 @@
     let legs = [0, 0];
     let startScore = 0;
     let currentPlayer = 0; // 0 of 1
+    let selectedScore = 0;
 
     // Comprehensive checkout table with optimal dart combinations
     const checkouts = {
@@ -346,14 +353,20 @@
         return { text: "", className: "" };
     }
 
-    function startGame(val) {
-        startScore = val;
-        scores = [val, val];
+    function selectScore(val) {
+        selectedScore = val;
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('player-select').style.display = 'block';
+    }
+
+    function startGame(startingPlayer) {
+        startScore = selectedScore;
+        scores = [selectedScore, selectedScore];
         legs = [0, 0];
-        currentPlayer = 0;
+        currentPlayer = startingPlayer;
         
         updateDisplay();
-        document.getElementById('setup').style.display = 'none';
+        document.getElementById('player-select').style.display = 'none';
         document.getElementById('game').style.display = 'block';
     }
 
