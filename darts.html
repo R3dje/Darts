@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Darts Scorebord 2P</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --accent-color: #ffcc00;
+            --player1-color: #3498db;
+            --player2-color: #e74c3c;
+            --text-color: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 95%; max-width: 500px; padding: 20px; text-align: center; }
+
+        /* Setup Scherm */
+        #setup { margin-top: 50px; }
+        .mode-btn {
+            padding: 20px; margin: 10px; font-size: 1.5rem; width: 80px;
+            border-radius: 15px; border: none; background: var(--accent-color); font-weight: bold;
+        }
+
+        /* Scorebord Layout */
+        #game { display: none; width: 100%; }
+        .scoreboard { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        
+        .player-card {
+            width: 45%; padding: 15px; border-radius: 15px; background: var(--card-bg);
+            border: 4px solid transparent; transition: 0.3s;
+        }
+        .player-card.active { border-color: var(--accent-color); transform: scale(1.05); }
+        .player-card h2 { margin: 0; font-size: 1rem; opacity: 0.8; }
+        .score { font-size: 3.5rem; font-weight: bold; margin: 10px 0; }
+        .legs { font-size: 1rem; color: var(--accent-color); }
+
+        /* Input sectie */
+        .input-box {
+            background: var(--card-bg); padding: 20px; border-radius: 20px;
+            margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        input {
+            width: 80%; padding: 15px; font-size: 2rem; text-align: center;
+            border-radius: 10px; border: none; margin-bottom: 15px;
+            background: #444; color: white;
+        }
+        .submit-btn {
+            width: 100%; padding: 15px; font-size: 1.5rem; font-weight: bold;
+            background: #2ecc71; color: white; border: none; border-radius: 10px;
+        }
+        .reset-btn { margin-top: 30px; background: none; color: #888; border: none; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Darts Battle</h1>
+
+    <div id="setup">
+        <p>Kies je startscore:</p>
+        <button class="mode-btn" onclick="startGame(101)">101</button>
+        <button class="mode-btn" onclick="startGame(301)">301</button>
+        <button class="mode-btn" onclick="startGame(501)">501</button>
+    </div>
+
+    <div id="game">
+        <div class="scoreboard">
+            <div id="card1" class="player-card active">
+                <h2>Speler 1</h2>
+                <div class="score" id="score1">501</div>
+                <div class="legs" id="legs1">Legs: 0</div>
+            </div>
+            <div id="card2" class="player-card">
+                <h2>Speler 2</h2>
+                <div class="score" id="score2">501</div>
+                <div class="legs" id="legs2">Legs: 0</div>
+            </div>
+        </div>
+
+        <div class="input-box">
+            <p id="turn-indicator">Beurt: <b>Speler 1</b></p>
+            <input type="number" id="points-input" pattern="\d*" inputmode="numeric" placeholder="0">
+            <button class="submit-btn" onclick="processTurn()">Bevestig</button>
+        </div>
+
+        <button class="reset-btn" onclick="location.reload()">Match stoppen</button>
+    </div>
+</div>
+
+<script>
+    let scores = [0, 0]; // Index 0 is Speler 1, Index 1 is Speler 2
+    let legs = [0, 0];
+    let startScore = 0;
+    let currentPlayer = 0; // 0 of 1
+
+    function startGame(val) {
+        startScore = val;
+        scores = [val, val];
+        legs = [0, 0];
+        currentPlayer = 0;
+        
+        updateDisplay();
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+    }
+
+    function processTurn() {
+        const input = document.getElementById('points-input');
+        const points = parseInt(input.value);
+
+        if (isNaN(points) || points < 0 || points > 180) {
+            alert("Voer een geldige score in (0-180)");
+            input.value = '';
+            return;
+        }
+
+        let currentScore = scores[currentPlayer];
+        let newScore = currentScore - points;
+
+        // DARTS LOGICA
+        if (newScore === 0) {
+            // Leg Gewonnen!
+            legs[currentPlayer]++;
+            alert("Speler " + (currentPlayer + 1) + " wint de leg!");
+            
+            if (legs[currentPlayer] === 3) {
+                alert("MATCH OVER! Speler " + (currentPlayer + 1) + " wint de wedstrijd!");
+                location.reload();
+                return;
+            }
+            // Reset scores voor volgende leg
+            scores = [startScore, startScore];
+        } else if (newScore < 0 || newScore === 1) {
+            alert("Bust! Score blijft " + currentScore);
+            // Bij Bust wisselt de beurt wel
+        } else {
+            scores[currentPlayer] = newScore;
+        }
+
+        // Wissel van speler
+        currentPlayer = currentPlayer === 0 ? 1 : 0;
+        
+        input.value = '';
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById('score1').innerText = scores[0];
+        document.getElementById('score2').innerText = scores[1];
+        document.getElementById('legs1').innerText = "Legs: " + legs[0];
+        document.getElementById('legs2').innerText = "Legs: " + legs[1];
+        
+        // Update visuele indicatie wie aan de beurt is
+        document.getElementById('card1').className = "player-card " + (currentPlayer === 0 ? "active" : "");
+        document.getElementById('card2').className = "player-card " + (currentPlayer === 1 ? "active" : "");
+        document.getElementById('turn-indicator').innerHTML = "Beurt: <b>Speler " + (currentPlayer + 1) + "</b>";
+    }
+</script>
+
+</body>
+</html>
